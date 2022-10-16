@@ -54,6 +54,15 @@ class HitAndBlow {
       return;
     }
 
-
+    const result = this.check(inputArr);
+    if (result.hit !== this.answer.length) {
+      // 不正解だったら続ける
+      printLine(`---\nHit: ${result.hit}\nBlow: ${result.blow}\n---`);
+      this.trycount += 1;
+      await this.play();
+    } else {
+      // 正解だったら終了
+      this.trycount += 1;
+    }
+  }
 }
-
