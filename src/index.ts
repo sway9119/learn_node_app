@@ -1,3 +1,4 @@
+// <関数群>
 const printLine = (text: string, breakLine: boolean = true) => {
   process.stdout.write(text + (breakLine ? "\n" : ""));
 };
@@ -29,22 +30,28 @@ const promptSelect = async <T extends string>(
   }
 };
 
+// <定数>
+// ゲーム終了時の選択肢
 const nextActions = ["play again", "exit"] as const;
 type NextAction = typeof nextActions[number];
-
+// ゲームタイトル
 const gameTitles = ["hit and blow", "janken"] as const;
 type GameTitle = typeof gameTitles[number];
-
+// ゲームモード
+const modes = ["normal", "hard", "very hard"] as const;
+type Mode = typeof modes[number];
+// ゲームストア
 type GameStore = {
   [key in GameTitle]: Game;
 };
 
+// <抽象クラス>
 abstract class Game {
   abstract setting(): Promise<void>;
   abstract play(): Promise<void>;
   abstract end(): void;
 }
-
+// <実装クラス>
 class GameProcedure {
   private currentGameTitle: GameTitle | "" = "";
   private currentGame: Game | null = null;
@@ -92,10 +99,6 @@ class GameProcedure {
     process.exit();
   }
 }
-
-const modes = ["normal", "hard", "very hard"] as const;
-type Mode = typeof modes[number];
-
 class HitAndBlow implements Game {
   private readonly answerSource = [
     "0",
