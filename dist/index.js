@@ -35,25 +35,141 @@ var __generator = (this && this.__generator) || function (thisArg, body) {
         if (op[0] & 5) throw op[1]; return { value: op[0] ? op[1] : void 0, done: true };
     }
 };
+var nextActions = ["play again", "exit"];
+var gameTitles = ["hit and blow", "janken"];
+var Game = /** @class */ (function () {
+    function Game() {
+    }
+    return Game;
+}());
+var GameProcedure = /** @class */ (function () {
+    function GameProcedure(gameStore) {
+        this.gameStore = gameStore;
+        this.currentGameTitle = "";
+        this.currentGame = null;
+    }
+    GameProcedure.prototype.start = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0: return [4 /*yield*/, this.select()];
+                    case 1:
+                        _a.sent();
+                        return [4 /*yield*/, this.play()];
+                    case 2:
+                        _a.sent();
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    GameProcedure.prototype.select = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var _a;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        _a = this;
+                        return [4 /*yield*/, promptSelect("ゲームタイトルを入力してください。", gameTitles)];
+                    case 1:
+                        _a.currentGameTitle = _b.sent();
+                        this.currentGame = this.gameStore[this.currentGameTitle];
+                        return [2 /*return*/];
+                }
+            });
+        });
+    };
+    GameProcedure.prototype.play = function () {
+        return __awaiter(this, void 0, void 0, function () {
+            var action, neverValue;
+            return __generator(this, function (_a) {
+                switch (_a.label) {
+                    case 0:
+                        if (!this.currentGame)
+                            throw new Error("ゲームが選択されていません");
+                        printLine("===\n" + this.currentGameTitle + "\u3092\u958B\u59CB\u3057\u307E\u3059\u3002\n===");
+                        return [4 /*yield*/, this.currentGame.setting()];
+                    case 1:
+                        _a.sent();
+                        return [4 /*yield*/, this.currentGame.play()];
+                    case 2:
+                        _a.sent();
+                        this.currentGame.end();
+                        return [4 /*yield*/, promptSelect("ゲームを続けますか？", nextActions)];
+                    case 3:
+                        action = _a.sent();
+                        if (!(action === "play again")) return [3 /*break*/, 5];
+                        return [4 /*yield*/, this.play()];
+                    case 4:
+                        _a.sent();
+                        return [3 /*break*/, 6];
+                    case 5:
+                        if (action === "exit") {
+                            this.end();
+                        }
+                        else {
+                            neverValue = action;
+                            throw new Error("$(neverValue) is an invalid action.");
+                        }
+                        _a.label = 6;
+                    case 6: return [2 /*return*/];
+                }
+            });
+        });
+    };
+    GameProcedure.prototype.end = function () {
+        printLine("ゲームを終了しました。");
+        process.exit();
+    };
+    return GameProcedure;
+}());
 var printLine = function (text, breakLine) {
     if (breakLine === void 0) { breakLine = true; }
     process.stdout.write(text + (breakLine ? "\n" : ""));
 };
 var promptInput = function (text) { return __awaiter(void 0, void 0, void 0, function () {
+    return __generator(this, function (_a) {
+        printLine("\n" + text + "\n> ", false);
+        return [2 /*return*/, readLine()];
+    });
+}); };
+var readLine = function () { return __awaiter(void 0, void 0, void 0, function () {
     var input;
     return __generator(this, function (_a) {
         switch (_a.label) {
-            case 0:
-                printLine("\n" + text + "\n> ", false);
-                return [4 /*yield*/, new Promise(function (resolve) {
-                        return process.stdin.once("data", function (data) { return resolve(data.toString()); });
-                    })];
+            case 0: return [4 /*yield*/, new Promise(function (resolve) {
+                    return process.stdin.once("data", function (data) { return resolve(data.toString()); });
+                })];
             case 1:
                 input = _a.sent();
                 return [2 /*return*/, input.trim()];
         }
     });
 }); };
+var promptSelect = function (text, values) { return __awaiter(void 0, void 0, void 0, function () {
+    var input;
+    return __generator(this, function (_a) {
+        switch (_a.label) {
+            case 0:
+                printLine("\n" + text);
+                values.forEach(function (value) {
+                    printLine("- " + value);
+                });
+                printLine("> ", false);
+                return [4 /*yield*/, readLine()];
+            case 1:
+                input = (_a.sent());
+                if (values.includes(input)) {
+                    return [2 /*return*/, input];
+                }
+                else {
+                    return [2 /*return*/, promptSelect(text, values)];
+                }
+                return [2 /*return*/];
+        }
+    });
+}); };
+var modes = ["normal", "hard", "very hard"];
 var HitAndBlow = /** @class */ (function () {
     function HitAndBlow() {
         this.answerSource = [
@@ -70,39 +186,67 @@ var HitAndBlow = /** @class */ (function () {
         ];
         this.answer = [];
         this.trycount = 0;
+        this.mode = "normal";
     }
     HitAndBlow.prototype.setting = function () {
-        var answerLength = 3;
-        while (this.answer.length < answerLength) {
-            var randNum = Math.floor(Math.random() * this.answerSource.length);
-            var selectedItem = this.answerSource[randNum];
-            if (!this.answer.includes(selectedItem)) {
-                this.answer.push(selectedItem);
-            }
-        }
+        return __awaiter(this, void 0, void 0, function () {
+            var _a, answerLength, randNum, selectedItem;
+            return __generator(this, function (_b) {
+                switch (_b.label) {
+                    case 0:
+                        // モードの設定
+                        // <Mode>を追加し、Mode型を返すことを明示的にする
+                        _a = this;
+                        return [4 /*yield*/, promptSelect("モードを入力してください。", modes)];
+                    case 1:
+                        // モードの設定
+                        // <Mode>を追加し、Mode型を返すことを明示的にする
+                        _a.mode = _b.sent();
+                        answerLength = this.getAnswerLength();
+                        // 正解の設定
+                        while (this.answer.length < answerLength) {
+                            randNum = Math.floor(Math.random() * this.answerSource.length);
+                            selectedItem = this.answerSource[randNum];
+                            if (!this.answer.includes(selectedItem)) {
+                                this.answer.push(selectedItem);
+                            }
+                        }
+                        return [2 /*return*/];
+                }
+            });
+        });
     };
     HitAndBlow.prototype.play = function () {
         return __awaiter(this, void 0, void 0, function () {
-            var inputArr, result;
+            var answerLength, inputArr, result;
             return __generator(this, function (_a) {
                 switch (_a.label) {
-                    case 0: return [4 /*yield*/, promptInput("「,」区切りで3つの数字を入力してください")];
+                    case 0:
+                        answerLength = this.getAnswerLength();
+                        return [4 /*yield*/, promptInput("\u300C,\u300D\u533A\u5207\u308A\u3067" + answerLength + "\u3064\u306E\u6570\u5B57\u3092\u5165\u529B\u3057\u3066\u304F\u3060\u3055\u3044")];
                     case 1:
                         inputArr = (_a.sent()).split(",");
+                        if (!!this.validate(inputArr)) return [3 /*break*/, 3];
+                        printLine("無効な入力です");
+                        return [4 /*yield*/, this.play()];
+                    case 2:
+                        _a.sent();
+                        return [2 /*return*/];
+                    case 3:
                         result = this.check(inputArr);
-                        if (!(result.hit !== this.answer.length)) return [3 /*break*/, 3];
+                        if (!(result.hit !== this.answer.length)) return [3 /*break*/, 5];
                         // 不正解だったら続ける
                         printLine("---\nHit: " + result.hit + "\nBlow: " + result.blow + "\n---");
                         this.trycount += 1;
                         return [4 /*yield*/, this.play()];
-                    case 2:
+                    case 4:
                         _a.sent();
-                        return [3 /*break*/, 4];
-                    case 3:
+                        return [3 /*break*/, 6];
+                    case 5:
                         // 正解だったら終了
                         this.trycount += 1;
-                        _a.label = 4;
-                    case 4: return [2 /*return*/];
+                        _a.label = 6;
+                    case 6: return [2 /*return*/];
                 }
             });
         });
@@ -124,25 +268,61 @@ var HitAndBlow = /** @class */ (function () {
             blow: blowCount
         };
     };
+    HitAndBlow.prototype.getAnswerLength = function () {
+        switch (this.mode) {
+            case "normal":
+                return 3;
+            case "hard":
+                return 4;
+            case "very hard":
+                return 5;
+            default:
+                var neverValue = this.mode;
+                throw new Error(neverValue + "\u306F\u7121\u52B9\u30E2\u30FC\u30C9\u3067\u3059\u3002");
+        }
+    };
     HitAndBlow.prototype.end = function () {
         printLine("\u6B63\u89E3\u3067\u3059\uFF01\n\u8A66\u884C\u56DE\u6570: " + this.trycount + "\u56DE");
-        process.exit();
+        this.reset();
+    };
+    HitAndBlow.prototype.validate = function (inputArr) {
+        var _this = this;
+        var isLengthValid = inputArr.length === this.answer.length;
+        var isAllAnswerSourceOption = inputArr.every(function (val) {
+            return _this.answerSource.includes(val);
+        });
+        var isAllDifferntValid = inputArr.every(function (val, i) { return inputArr.indexOf(val) === i; });
+        return isLengthValid && isAllAnswerSourceOption && isAllDifferntValid;
+    };
+    HitAndBlow.prototype.reset = function () {
+        this.answer = [];
+        this.trycount = 0;
     };
     return HitAndBlow;
 }());
+var Janken = /** @class */ (function () {
+    function Janken() {
+    }
+    Janken.prototype.setting = function () {
+        return __awaiter(this, void 0, void 0, function () { return __generator(this, function (_a) {
+            return [2 /*return*/];
+        }); });
+    };
+    Janken.prototype.play = function () {
+        return __awaiter(this, void 0, void 0, function () { return __generator(this, function (_a) {
+            return [2 /*return*/];
+        }); });
+    };
+    Janken.prototype.end = function () { };
+    return Janken;
+}());
 // エントリ
 (function () { return __awaiter(void 0, void 0, void 0, function () {
-    var hitAndBlow;
     return __generator(this, function (_a) {
-        switch (_a.label) {
-            case 0:
-                hitAndBlow = new HitAndBlow();
-                hitAndBlow.setting();
-                return [4 /*yield*/, hitAndBlow.play()];
-            case 1:
-                _a.sent();
-                hitAndBlow.end();
-                return [2 /*return*/];
-        }
+        new GameProcedure({
+            "hit and blow": new HitAndBlow(),
+            janken: new Janken()
+        }).start();
+        return [2 /*return*/];
     });
 }); })();
